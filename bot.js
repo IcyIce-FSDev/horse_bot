@@ -94,7 +94,9 @@ client.on("connect", async function (connection) {
 
   // Event listener for when message is received after start of connection
   connection.on("message", (message) => {
-    logData(message, "_data_raw_full");
+    message.localTimestamp = new Date().toUTCString();
+
+    logData(message, "data_raw");
 
     let parsedMessage;
 
@@ -106,14 +108,17 @@ client.on("connect", async function (connection) {
     }
 
     parsedMessage.forEach((message) => {
-      if (message.user) {
-        // Save message.user through function
-        logUser(message.user, "users");
-      }
+      // if (message.command) {
+      //   logData(message, "_data_parsed_full");
+      // }
 
-      if (message.command) {
-        logData(message, "_data_parsed_full");
-      }
+      // Disabled for now!
+      /* Self replicating feature 
+      // if (message.user) {
+      //   // Save message.user through function
+      //   logUser(message.user, "users");
+      // }
+      */
 
       switch (message.command) {
         case "PING":
@@ -123,25 +128,25 @@ client.on("connect", async function (connection) {
           logData(message, "data_ping");
           break;
 
-        case "JOIN":
-          logData(message, "data_join");
-          break;
+        // case "JOIN":
+        //   logData(message, "data_join");
+        //   break;
 
-        case "353":
-          logData(message, "data_viewers");
-          break;
+        // case "353":
+        //   logData(message, "data_viewers");
+        //   break;
 
-        case "PART":
-          logData(message, "data_left");
-          break;
+        // case "PART":
+        //   logData(message, "data_left");
+        //   break;
 
-        case "PRIVMSG":
-          logData(message, "data_privmsg");
-          break;
+        // case "PRIVMSG":
+        //   logData(message, "data_privmsg");
+        //   break;
 
-        case "USERNOTICE":
-          logData(message, "data_announcements");
-          break;
+        // case "USERNOTICE":
+        //   logData(message, "data_announcements");
+        //   break;
 
         default:
           break;
