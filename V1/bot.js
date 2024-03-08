@@ -121,12 +121,12 @@ client.on("connect", async function (connection) {
       */
 
       switch (message.command) {
-        case "PING":
-          const spaceIndex = message.rawData.indexOf(" ");
-          const text = message.rawData.slice(spaceIndex + 1);
-          connection.sendUTF(`PONG ${text}`);
-          logData(message, "data_ping");
-          break;
+        // case "PING":
+        //   const spaceIndex = message.rawData.indexOf(" ");
+        //   const text = message.rawData.slice(spaceIndex + 1);
+        //   connection.sendUTF(`PONG ${text}`);
+        //   logData(message, "data_ping");
+        //   break;
 
         // case "JOIN":
         //   logData(message, "data_join");
