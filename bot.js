@@ -1,15 +1,28 @@
 const WebSocketClient = require("websocket").client; // WS libarary
+const fs = require("fs");
+const path = require("path");
 
-// Custom Scripts
 const parseMessage = require("./utils/parseMessage");
 const logData = require("./logging/logData");
 const logUser = require("./logging/logUser");
 const cleanUp = require("./logging/cleanUp");
 
-// Settings file
 const settings = require("./_settings.json");
-// const channels = require("./logging/users/users.json");
-const channels = settings.channels;
+
+// Function to load channels from a JSON file or fallback to settings
+function loadChannels() {
+  const usersJsonPath = "./logging/users/users.json";
+  if (fs.existsSync(usersJsonPath)) {
+    // Load channels from the JSON file if it exists
+    return require(usersJsonPath);
+  } else {
+    // Fallback to settings.channels if JSON file doesn't exist
+    return require("./_settings.json").channels;
+  }
+}
+
+// Load channels from JSON or settings
+const channels = loadChannels();
 
 // Create client instance
 const client = new WebSocketClient();
@@ -77,6 +90,8 @@ client.on("connect", async function (connection) {
 
   // Event listener for when message is received after start of connection
   connection.on("message", (message) => {
+    logData(message, "_data_raw_full");
+
     let parsedMessage;
 
     try {
