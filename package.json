@@ -1,0 +1,26 @@
+{
+  "name": "horse_bot",
+  "version": "1.0.0",
+  "description": "Twitch chat bot custom made by Monkayshrek/IcyIce",
+  "main": "bot.js",
+  "scripts": {
+    "test": "nodemon bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/IcyIce-FSDev/horse_bot"
+  },
+  "keywords": [
+    "twitch",
+    "chat",
+    "bot",
+    "javascript",
+    "parser"
+  ],
+  "author": "IcyIce (A.K.A MonkayShrek)",
+  "license": "ISC",
+  "dependencies": {
+    "date-fns": "^3.3.1",
+    "websocket": "^1.0.34"
+  }
+}
