@@ -1,0 +1,3 @@
+{
+  "ignore": ["logging/data", "logging/users"]
+}
