@@ -35,7 +35,7 @@ client.on("connectFailed", function (error) {
 });
 
 // Define a variable to track the number of batches
-let batchesLeft = Math.ceil(channels.length / 19.9);
+let batchesLeft = Math.ceil(channels.length / 20);
 
 // Define a function to join channels in batches
 async function joinChannelsBatch(connection) {
@@ -49,7 +49,11 @@ async function joinChannelsBatch(connection) {
   const formattedChannels = batch.map((channel) => `#${channel}`).join(",");
   connection.sendUTF(`JOIN ${formattedChannels}`);
   console.log("Channels joined.");
-  console.log(`${batchesLeft} groups of 20 channels left to join.`);
+  console.log(
+    `${batchesLeft} groups of 20 channels left to join. Approx ${Math.round(
+      (batchesLeft * 10) / 60
+    )} mins left til full start`
+  );
 
   // If there are no more channels, clear the interval
   if (batchesLeft === 0) {
@@ -133,6 +137,10 @@ client.on("connect", async function (connection) {
 
         case "PRIVMSG":
           logData(message, "data_privmsg");
+          break;
+
+        case "USERNOTICE":
+          logData(message, "data_announcements");
           break;
 
         default:

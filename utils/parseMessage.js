@@ -5,6 +5,9 @@ const parseGUS = require("./lib/parseGUS");
 const parseChannel = require("./lib/parseChannel");
 const parseState = require("./lib/parseState");
 const parsePRIV = require("./lib/parsePRIV");
+const parseNotice = require("./lib/parseNotice");
+const parseUserNotice = require("./lib/parseUserNotice");
+const parseClear = require("./lib/parseClear");
 
 function parseMessage(message) {
   const parsedMessageArray = [];
@@ -84,6 +87,22 @@ function parseMessage(message) {
           command: "PART",
           channel: spaceSeparatedParts[2],
         };
+        break;
+
+      // Finish
+      case spaceSeparatedParts.includes("USERNOTICE"):
+        parsedMessage = parseUserNotice(spaceSeparatedParts);
+        break;
+
+      // Finish
+      case spaceSeparatedParts.includes("CLEARMSG"):
+      case spaceSeparatedParts.includes("CLEARCHAT"):
+        parsedMessage = parseClear(spaceSeparatedParts);
+        break;
+
+      // Finish
+      case spaceSeparatedParts.includes("NOTICE"):
+        parsedMessage = parseNotice(spaceSeparatedParts);
         break;
 
       // Finish
