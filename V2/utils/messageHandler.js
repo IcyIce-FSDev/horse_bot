@@ -4,6 +4,7 @@ const parser = require("./parser");
 
 function messageHandler(message, connection) {
   message.UTCTime = new Date().toUTCString();
+  message.LocalTime = new Date().toString();
 
   logData(message, "data_raw");
 
@@ -28,7 +29,7 @@ function messageHandler(message, connection) {
       logData(message, "data_ping");
       break;
     case "PRIVMSG":
-      logUser(parsedMessage.tags["display-name"], "users");
+      logUser(parsedMessage.source.nick, "users");
       break;
     default:
       break;

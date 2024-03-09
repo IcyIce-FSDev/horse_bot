@@ -12,7 +12,7 @@ const client = new WebSocketClient();
 
 // Function to load channels from a JSON file or fallback to settings
 function loadChannels() {
-  const usersJsonPath = "./utils/logs/users.json";
+  const usersJsonPath = "./utils/users/users.json";
   if (fs.existsSync(usersJsonPath)) {
     // Load channels from the JSON file if it exists
     return require(usersJsonPath);
@@ -23,7 +23,7 @@ function loadChannels() {
 }
 
 // Load channels from JSON or settings
-const channels = loadChannels();
+let channels = loadChannels();
 
 // Global variables
 let intervalId;
@@ -44,6 +44,7 @@ client.on("connect", async function (connection) {
   // Event listener for when the connection is closed by the server
   connection.on("close", function (reasonCode, description) {
     console.log(`Connection closed by server: ${description}`);
+    channels = loadChannels();
     // Optionally, you can attempt to reconnect here
     client.connect("ws://irc-ws.chat.twitch.tv:80");
   });
