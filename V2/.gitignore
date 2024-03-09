@@ -1,6 +1,5 @@
-/logging/data
-/logging/users
+utils/logs/
 /node_modules
 
 
-utils/_settings.json
+botSettings.json
