@@ -1,4 +1,5 @@
 const logData = require("./logData");
+const logUser = require("./logUser");
 const parser = require("./parser");
 
 function messageHandler(message, connection) {
@@ -26,7 +27,9 @@ function messageHandler(message, connection) {
       connection.sendUTF(`PONG ${text}`);
       logData(message, "data_ping");
       break;
-
+    case "PRIVMSG":
+      logUser(parsedMessage.tags["display-name"], "users");
+      break;
     default:
       break;
   }
