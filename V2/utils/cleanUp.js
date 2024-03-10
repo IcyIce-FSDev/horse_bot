@@ -1,6 +1,6 @@
 const fs = require("fs").promises; // Import promises version of fs
 const path = require("path");
-const directory = "./utils/logs";
+const directory = "./log/data";
 
 async function cleanUp() {
   // Create the directory if it doesn't exist

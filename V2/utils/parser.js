@@ -1,9 +1,3 @@
-const parseCommand = require("./lib/parseCommand");
-const parseSource = require("./lib/parseSource");
-const parseTags = require("./lib/parseTags");
-const parseParameters = require("./lib/parseParameters");
-const parseViewers = require("./lib/parseViewers");
-
 // Function to parse message
 function parser(message) {
   if (message.type !== "utf8") {
@@ -11,106 +5,229 @@ function parser(message) {
   }
 
   let parsedMessage = {
-    // Contains the component parts.
-    tags: null,
-    source: null,
-    commands: null,
-    parameters: null,
-    UTCTime: message.UTCTime,
+    command: [],
   };
 
-  // The start index. Increments as we parse the IRC message.
+  const lines = message.utf8Data
+    .split("\r\n")
+    .filter((line) => line.trim() !== "");
 
-  let idx = 0;
+  lines.forEach((line) => {
+    const channelRegex = /(?:^|\s)#\w+/g;
+    const channelMatches = line.match(channelRegex);
+    if (channelMatches && channelMatches.length > 0) {
+      if (!parsedMessage.channel) {
+        parsedMessage.channel = [];
+      }
 
-  // The raw components of the IRC message.
-
-  let rawTagsComponent = null;
-  let rawSourceComponent = null;
-  let rawCommandComponent = null;
-  let rawParametersComponent = null;
-
-  // If the message includes tags, get the tags component of the IRC message.
-
-  if (message.utf8Data[idx] === "@") {
-    // The message includes tags.
-    let endIdx = message.utf8Data.indexOf(" ");
-    rawTagsComponent = message.utf8Data.slice(1, endIdx);
-    idx = endIdx + 1; // Should now point to source colon (:).
-  }
-
-  // Get the source component (nick and host) of the IRC message.
-  // The idx should point to the source part; otherwise, it's a PING command.
-
-  if (message.utf8Data[idx] === ":") {
-    idx += 1;
-    let endIdx = message.utf8Data.indexOf(" ", idx);
-    rawSourceComponent = message.utf8Data.slice(idx, endIdx);
-    idx = endIdx + 1; // Should point to the command part of the message.
-  }
-
-  // Get the command component of the IRC message.
-
-  let endIdx = message.utf8Data.indexOf(":", idx); // Looking for the parameters part of the message.
-  if (-1 == endIdx) {
-    // But not all messages include the parameters part.
-    endIdx = message.utf8Data.length;
-  }
-
-  rawCommandComponent = message.utf8Data.slice(idx, endIdx).trim();
-
-  // Get the parameters component of the IRC message.
-
-  if (endIdx != message.utf8Data.length) {
-    // Check if the IRC message contains a parameters component.
-    idx = endIdx + 1; // Should point to the parameters part of the message.
-    rawParametersComponent = message.utf8Data.slice(idx);
-  }
-
-  parsedMessage.commands = parseCommand(rawCommandComponent);
-
-  if (null == parsedMessage.commands) {
-    // Is null if it's a message we don't care about.
-    return null;
-  } else {
-    if (null != rawTagsComponent) {
-      // The IRC message contains tags.
-      parsedMessage.tags = parseTags(rawTagsComponent);
-    }
-
-    parsedMessage.source = parseSource(rawSourceComponent);
-
-    parsedMessage.parameters = rawParametersComponent;
-
-    if (rawParametersComponent && rawParametersComponent[0] === "!") {
-      // The user entered a bot command in the chat window.
-
-      parsedMessage.commands = parseParameters(
-        rawParametersComponent,
-        parsedMessage.commands
+      parsedMessage.channel.push(
+        ...channelMatches.map((match) => match.trim())
       );
     }
+
+    if (line.includes("PRIVMSG")) {
+      parsedMessage.command = ["PRIVMSG"];
+
+      const userRegex = /(?<=:)[a-zA-Z0-9]+(?=!)/;
+      const userMatch = line.match(userRegex);
+      if (userMatch && userMatch.length > 0) {
+        parsedMessage.user = userMatch[0].trim();
+      }
+
+      const spaceIdx = message.utf8Data.indexOf(" ");
+      const rawTagsStr = message.utf8Data.slice(0, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      let newTags = {};
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        newTags[key] = value;
+      });
+
+      parsedMessage.tags = newTags;
+
+      const msgRegex = /PRIVMSG\s#\w+\s:(.*)/;
+      const msgMatch = line.match(msgRegex);
+      if (msgMatch && msgMatch.length > 1) {
+        parsedMessage.msg = msgMatch[1].trim();
+      }
+    } else if (line.includes("JOIN") || line.includes("PART")) {
+      parsedMessage.command = ["JOIN", "PART"];
+
+      const command = line.includes("JOIN") ? "JOIN" : "PART";
+      const userRegex = /:(.*?)!/;
+      const userMatch = line.match(userRegex);
+
+      if (!parsedMessage.viewers) {
+        parsedMessage.viewers = {};
+      }
+
+      if (!parsedMessage.viewers[command]) {
+        parsedMessage.viewers[command] = [];
+      }
+
+      if (userMatch && userMatch.length > 1) {
+        const username = userMatch[1];
+        parsedMessage.viewers[command].push(username);
+      }
+    } else if (line.includes("PING")) {
+      parsedMessage.command = ["PING"];
+
+      parsedMessage.raw = message.utf8Data;
+    } else if (line.includes("GLOBALUSERSTATE")) {
+      parsedMessage.command = ["GLOBALUSERSTATE"];
+
+      const spaceIdx = line.indexOf(" ");
+      const rawTagsStr = line.slice(1, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      let newTags = {};
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        newTags[key] = value;
+      });
+
+      parsedMessage.tags = newTags;
+    } else if (line.includes("ROOMSTATE") || line.includes("USERSTATE")) {
+      parsedMessage.command = ["ROOMSTATE", "USERSTATE"];
+
+      const spaceIdx = line.indexOf(" ");
+      const rawTagsStr = line.slice(1, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      const state = line.includes("ROOMSTATE") ? "roomState" : "userState";
+
+      let newTags = {
+        roomState: {},
+        userState: {},
+      };
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        if (line.includes("ROOMSTATE")) {
+          newTags.roomState[key] = value;
+        } else {
+          newTags.userState[key] = value;
+        }
+      });
+
+      if (parsedMessage.tags && newTags.roomState) {
+        parsedMessage.tags.roomState = newTags.roomState;
+      } else if (parsedMessage.tags && newTags.userState) {
+        parsedMessage.tags.userState = newTags.userState;
+      } else {
+        parsedMessage.tags = newTags;
+      }
+    } else if (line.includes("CLEARCHAT")) {
+      parsedMessage.command = ["CLEARCHAT"];
+
+      const lastSpaceIdx = line.lastIndexOf(" ");
+
+      const colonIdx = line.indexOf(":", lastSpaceIdx);
+
+      const username = line.slice(colonIdx + 1);
+
+      parsedMessage.user = username.trim();
+
+      const spaceIdx = line.indexOf(" ");
+      const rawTagsStr = line.slice(1, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      let newTags = {};
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        newTags[key] = value;
+      });
+
+      parsedMessage.tags = newTags;
+    } else if (line.includes("USERNOTICE")) {
+      parsedMessage.command = ["USERNOTICE"];
+
+      const spaceIdx = line.indexOf(" ");
+      const rawTagsStr = line.slice(1, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      let newTags = {};
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        const replacedValue = value.replace(/\\s/g, " ");
+
+        newTags[key] = replacedValue;
+      });
+
+      parsedMessage.tags = newTags;
+    } else if (line.includes("CLEARMSG")) {
+      parsedMessage.command = ["CLEARMSG"];
+
+      const spaceIdx = line.indexOf(" ");
+      const rawTagsStr = line.slice(1, spaceIdx);
+      const rawTagsArr = rawTagsStr.split(";");
+
+      let newTags = {};
+
+      rawTagsArr.forEach((pair) => {
+        const [key, value] = pair.split("=");
+
+        newTags[key] = value;
+      });
+
+      parsedMessage.tags = newTags;
+
+      const lastColonIdx = line.lastIndexOf(":");
+
+      parsedMessage.msg = line.slice(lastColonIdx + 1);
+    } else if (line.includes("353") || line.includes("366")) {
+      parsedMessage.command = ["353", "366"];
+
+      if (line.includes("353")) {
+        let users = parsedMessage.viewers ? parsedMessage.viewers : [];
+
+        const lastColonIdx = line.lastIndexOf(":");
+
+        const usersStr = line.slice(lastColonIdx + 1);
+
+        const userArr = usersStr.split(" ");
+
+        if (!Array.isArray(users)) {
+          users = [];
+        }
+
+        users = users.concat(userArr);
+
+        parsedMessage.viewers = users;
+      }
+    } else if (line.includes("CAP")) {
+      parsedMessage.command = ["CAP"];
+
+      parsedMessage.raw = message.utf8Data;
+    }
+  });
+
+  if (!parsedMessage.command) return parsedMessage;
+
+  if (parsedMessage.channel) {
+    parsedMessage.channel = (() => {
+      const filteredArr = parsedMessage.channel.filter(
+        (item) => item !== undefined && item !== null
+      );
+
+      const uniqueArr = [...new Set(filteredArr)];
+
+      return uniqueArr;
+    })();
   }
 
-  if (rawParametersComponent && !rawParametersComponent.includes("353")) {
-    if (parsedMessage.commands.command === "PART") {
-      parsedMessage.viewers = parseViewers(rawParametersComponent);
-    }
-
-    if (parsedMessage.commands.command === "JOIN") {
-      parsedMessage.viewers = parseViewers(rawParametersComponent);
-    }
-
-    switch (parsedMessage.commands.command) {
-      case "JOIN":
-      case "PART":
-        parsedMessage.commands.command = "JOIN/PART";
-        break;
-
-      default:
-        break;
-    }
-  }
+  parsedMessage.localTime = message.localTime;
+  parsedMessage.UTCTime = message.UTCTime;
 
   return parsedMessage;
 }

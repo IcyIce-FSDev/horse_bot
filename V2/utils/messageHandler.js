@@ -1,39 +1,64 @@
+const sendPong = require("../commands/sendPong");
 const logData = require("./logData");
 const logUser = require("./logUser");
 const parser = require("./parser");
 
 function messageHandler(message, connection) {
   message.UTCTime = new Date().toUTCString();
-  message.LocalTime = new Date().toString();
-
-  logData(message, "data_raw");
+  message.localTime = new Date().toString();
 
   let parsedMessage;
 
   try {
     parsedMessage = parser(message);
   } catch (error) {
-    logData([error.message], "data_error");
+    logData([error.message], "data_error_node");
     return;
   }
 
-  logData(parsedMessage, "data_parsed");
+  if (!parsedMessage.command) {
+    logData(message, "data_error");
+    return;
+  }
 
-  if (!parsedMessage) return;
-
-  switch (parsedMessage.commands.command) {
+  switch (parsedMessage.command[0]) {
+    case "CAP":
+      logData(parsedMessage, "data_cap");
+      break;
+    case "CLEARCHAT":
+      logData(parsedMessage, "data_clearchat");
+      break;
+    case "CLEARMSG":
+      logData(parsedMessage, "data_clearmsg");
+      break;
     case "PING":
-      const spaceIndex = message.utf8Data.indexOf(" ");
-      const text = message.utf8Data.slice(spaceIndex + 1);
-      connection.sendUTF(`PONG ${text}`);
-      logData(message, "data_ping");
+      sendPong(parsedMessage, connection);
+      logData(parsedMessage, "data_ping");
       break;
     case "PRIVMSG":
-      logUser(parsedMessage.source.nick, "users");
+      logData(parsedMessage, "data_privmsg");
+      break;
+    case "GLOBALUSERSTATE":
+    case "ROOMSTATE":
+    case "USERSTATE":
+      logData(parsedMessage, "data_state");
+      break;
+    case "USERNOTICE":
+      logData(parsedMessage, "data_usernotice");
+      break;
+    case "353":
+    case "366":
+      logData(parsedMessage, "data_viewers");
+      break;
+    case "JOIN":
+    case "PART":
+      logData(parsedMessage, "data_viewers_join_part");
       break;
     default:
       break;
   }
+
+  logData(parsedMessage, "_data");
   // End function
   return;
 }

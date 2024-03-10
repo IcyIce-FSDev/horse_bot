@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 function logData(data, fileName) {
-  const directory = "./utils/logs";
+  const directory = "./log/data";
 
   // Create the directory if it doesn't exist
   if (!fs.existsSync(directory)) {

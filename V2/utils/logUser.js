@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 function logUser(data, fileName) {
-  const directory = "./utils/users";
+  const directory = "./log/users";
 
   // Create the directory if it doesn't exist
   if (!fs.existsSync(directory)) {
@@ -31,6 +31,8 @@ function logUser(data, fileName) {
 
   // If the data doesn't exist, append it to the existing array
   if (!found) {
+    if (!data) return;
+
     existingData.push(data);
 
     existingData.sort();

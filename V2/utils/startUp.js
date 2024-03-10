@@ -1,8 +1,16 @@
 const cleanUp = require("./cleanUp");
+const fs = require("fs");
 
 let started;
 
 async function startUp(connection, settings) {
+  const directory = "./log";
+
+  // Create the directory if it doesn't exist
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory);
+  }
+
   if (!started) {
     // Clean up data logs
     console.log("Performing cleanup...");
