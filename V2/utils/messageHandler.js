@@ -1,5 +1,5 @@
-const raidAnno = require("./commands/raidAnno");
-const sendPong = require("./commands/sendPong");
+const raidAnno = require("./messageHandlers/raidAnno");
+const sendPong = require("./messageHandlers/sendPong");
 const logData = require("./tools/logData");
 const logUser = require("./tools/logUser");
 const parser = require("./tools/parser");

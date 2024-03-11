@@ -1,7 +1,4 @@
-const cleanUp = require("./tools/cleanUp");
 const fs = require("fs");
-
-let started;
 
 async function startUp(connection, settings) {
   const directory = "./log";
@@ -9,21 +6,6 @@ async function startUp(connection, settings) {
   // Create the directory if it doesn't exist
   if (!fs.existsSync(directory)) {
     fs.mkdirSync(directory);
-  }
-
-  if (!started) {
-    // Clean up data logs
-    console.log("Performing cleanup...");
-
-    const cleanPerformed = await cleanUp();
-
-    if (!cleanPerformed) {
-      console.log("Error in cleanup, shutting down...");
-      return false;
-    }
-
-    console.log("Done with cleanup...");
-    started = true;
   }
 
   console.log("Horse_Bot Connected");
