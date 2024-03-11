@@ -37,6 +37,7 @@ function messageHandler(message, connection) {
       break;
     case "PRIVMSG":
       logData(parsedMessage, "data_privmsg");
+      logUser(parsedMessage.user, "users");
       break;
     case "GLOBALUSERSTATE":
     case "ROOMSTATE":

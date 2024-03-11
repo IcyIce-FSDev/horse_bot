@@ -28,7 +28,7 @@ function parser(message) {
     if (line.includes("PRIVMSG")) {
       parsedMessage.command = ["PRIVMSG"];
 
-      const userRegex = /(?<=:)[a-zA-Z0-9]+(?=!)/;
+      const userRegex = /(?<=:)\w+(?=!)/;
       const userMatch = line.match(userRegex);
       if (userMatch && userMatch.length > 0) {
         parsedMessage.user = userMatch[0].trim();
