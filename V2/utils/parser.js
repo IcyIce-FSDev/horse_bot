@@ -4,9 +4,7 @@ function parser(message) {
     throw new Error(`Cannot parse = ${message}`);
   }
 
-  let parsedMessage = {
-    command: [],
-  };
+  let parsedMessage = {};
 
   const lines = message.utf8Data
     .split("\r\n")
@@ -211,6 +209,8 @@ function parser(message) {
       parsedMessage.command = ["CAP"];
 
       parsedMessage.raw = message.utf8Data;
+    } else if (line.includes("RECONNECT")) {
+      parsedMessage.command = ["RECONNECT"];
     }
   });
 
