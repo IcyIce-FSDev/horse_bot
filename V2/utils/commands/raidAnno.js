@@ -18,6 +18,9 @@ function raidAnno(message, connection) {
   })
     .then((response) => {
       if (!response.ok) {
+        connection.sendUTF(
+          `PRIVMSG ${message.channel[0]} :Please reach out to developer, encountered error with twitch API for streamer information`
+        );
         throw new Error("Network response was not ok");
       }
       return response.json();

@@ -1,4 +1,4 @@
-const cleanUp = require("./cleanUp");
+const cleanUp = require("./tools/cleanUp");
 const fs = require("fs");
 
 let started;
@@ -26,7 +26,7 @@ async function startUp(connection, settings) {
     started = true;
   }
 
-  console.log("WebSocket Client Connected");
+  console.log("Horse_Bot Connected");
 
   // Send CAP (optional), PASS, and NICK messages for authentication with twitch.
   connection.sendUTF(

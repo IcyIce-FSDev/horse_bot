@@ -1,8 +1,8 @@
 const raidAnno = require("./commands/raidAnno");
 const sendPong = require("./commands/sendPong");
-const logData = require("./logData");
-const logUser = require("./logUser");
-const parser = require("./parser");
+const logData = require("./tools/logData");
+const logUser = require("./tools/logUser");
+const parser = require("./tools/parser");
 
 function messageHandler(message, connection, settings, channels) {
   message.UTCTime = new Date().toUTCString();
@@ -23,22 +23,23 @@ function messageHandler(message, connection, settings, channels) {
   }
 
   switch (parsedMessage.command[0]) {
-    case "CAP":
-    case "CLEARCHAT":
-    case "CLEARMSG":
-    case "PING":
-      break;
-    case "PRIVMSG":
-      logUser(parsedMessage.user, "users");
-      break;
-    case "GLOBALUSERSTATE":
-    case "ROOMSTATE":
-    case "USERSTATE":
     case "USERNOTICE":
       if (parsedMessage.tags["msg-id"] === "raid") {
         raidAnno(parsedMessage, connection);
       }
       break;
+    case "PRIVMSG":
+      logUser(parsedMessage.user, "users");
+      break;
+    case "PING":
+      sendPong(parsedMessage, connection);
+      break;
+    case "CAP":
+    case "CLEARCHAT":
+    case "CLEARMSG":
+    case "GLOBALUSERSTATE":
+    case "ROOMSTATE":
+    case "USERSTATE":
     case "353":
     case "366":
     case "JOIN":
@@ -48,6 +49,8 @@ function messageHandler(message, connection, settings, channels) {
     default:
       break;
   }
+
+  logData(parsedMessage, "data");
 
   // End function
   return;
