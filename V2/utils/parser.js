@@ -132,7 +132,9 @@ function parser(message) {
 
       const username = line.slice(colonIdx + 1);
 
-      parsedMessage.user = username.trim();
+      if (username !== line) {
+        parsedMessage.user = username.trim();
+      }
 
       const spaceIdx = line.indexOf(" ");
       const rawTagsStr = line.slice(1, spaceIdx);

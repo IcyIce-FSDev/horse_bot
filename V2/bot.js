@@ -7,23 +7,11 @@ const settings = require("./botSettings.json");
 const startUp = require("./utils/startUp");
 const messageHandler = require("./utils/messageHandler");
 
+// Load channels from JSON or settings
+const channels = require("./botSettings.json").channels;
+
 // Create client instance
 const client = new WebSocketClient();
-
-// Function to load channels from a JSON file or fallback to settings
-function loadChannels() {
-  const usersJsonPath = "./utils/users/users.json";
-  if (fs.existsSync(usersJsonPath)) {
-    // Load channels from the JSON file if it exists
-    return require(usersJsonPath);
-  } else {
-    // Fallback to settings.channels if JSON file doesn't exist
-    return require("./botSettings.json").channels;
-  }
-}
-
-// Load channels from JSON or settings
-let channels = loadChannels();
 
 // Global variables
 let intervalId;

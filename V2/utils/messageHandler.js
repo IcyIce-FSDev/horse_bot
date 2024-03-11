@@ -1,4 +1,4 @@
-const sendPong = require("../commands/sendPong");
+const sendPong = require("./commands/sendPong");
 const logData = require("./logData");
 const logUser = require("./logUser");
 const parser = require("./parser");
@@ -46,6 +46,9 @@ function messageHandler(message, connection) {
       break;
     case "USERNOTICE":
       logData(parsedMessage, "data_usernotice");
+      if (parsedMessage.tags["msg-id"] === "raid") {
+        console.log(parsedMessage);
+      }
       break;
     case "353":
     case "366":
@@ -59,7 +62,6 @@ function messageHandler(message, connection) {
       break;
   }
 
-  logData(parsedMessage, "_data");
   // End function
   return;
 }
