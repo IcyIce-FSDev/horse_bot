@@ -27,7 +27,7 @@ function raidAnno(message, connection) {
     })
     .then((data) => {
       connection.sendUTF(
-        `PRIVMSG ${message.channel[0]} :ALERT! ALERT! ${message.tags["display-name"]} is raiding the channel! They are followed by ${message.tags["msg-param-viewerCount"]} viewer(s). Those people were watching ${message.tags["display-name"]} stream ${data.data[0].game_name}. Go follow them at www.twitch.com/${message.tags.login}!`
+        `PRIVMSG ${message.channel[0]} :ALERT! ALERT! ${message.tags["display-name"]} is raiding the channel! They are followed by ${message.tags["msg-param-viewerCount"]} viewer(s). Those people were watching ${message.tags["display-name"]} stream ${data.data[0].game_name}. Go follow them at www.twitch.com/${message.tags.login} !`
       );
     })
     .catch((error) => {
