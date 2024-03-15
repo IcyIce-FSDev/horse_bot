@@ -4,7 +4,8 @@
   "description": "twitch chat bot custom made",
   "main": "bot.js",
   "scripts": {
-    "test": "nodemon bot.js"
+    "test": "nodemon bot.js",
+    "start": "node bot.js"
   },
   "repository": {
     "type": "git",

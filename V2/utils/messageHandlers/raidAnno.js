@@ -1,4 +1,8 @@
+const settings = require("../../botSettings.json");
+
 function raidAnno(message, connection) {
+  const { twitch } = settings;
+
   if (
     !message.channel[0] === "#ira_tate" ||
     !message.channel[0] === "#fistofthehorse"
@@ -6,8 +10,8 @@ function raidAnno(message, connection) {
     return;
 
   const url = `https://api.twitch.tv/helix/channels?broadcaster_id=${message.tags["user-id"]}`;
-  const accessToken = "3d9ye8yar0detagnkou8cqjkyt3n43";
-  const clientId = "5qk3819o8iswtantpjnbxeci2xv87t";
+  const accessToken = twitch.access;
+  const clientId = twitch.clientID;
 
   fetch(url, {
     method: "GET",
